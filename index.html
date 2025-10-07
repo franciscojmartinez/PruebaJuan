@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestor de Dossieres de Prensa</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-ZSjK8mFsNyZwyKwkGGlN63oqUS5xK14H+QCjuC5E4TLZsXBLzGZs2y3eyZp4OhJ5maPkqlqbm0o7ILo7Zo/seg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <header>
+    <h1>Gestor de Dossieres de Prensa</h1>
+    <p>Organiza las páginas de tus periódicos en dossieres temáticos con total libertad.</p>
+  </header>
+  <main>
+    <section class="panel" id="library-panel">
+      <div class="panel-header">
+        <h2>Hemeroteca</h2>
+        <label class="file-upload">
+          <input type="file" id="pdf-input" accept="application/pdf" multiple />
+          <span>Subir periódicos (PDF)</span>
+        </label>
+      </div>
+      <div class="library">
+        <aside class="document-list" id="document-list"></aside>
+        <div class="document-viewer" id="document-viewer">
+          <p class="placeholder">Selecciona un periódico para ver sus páginas.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="dossier-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Dossieres</h2>
+          <p class="help-text">Selecciona un dossier para editarlo, reordenar páginas y añadir marcas.</p>
+        </div>
+        <form id="new-dossier-form" class="new-dossier-form">
+          <input type="text" id="new-dossier-name" placeholder="Nuevo dossier" aria-label="Nombre del nuevo dossier" />
+          <button type="submit">Crear</button>
+        </form>
+      </div>
+      <div class="dossier-container">
+        <aside class="dossier-list" id="dossier-list"></aside>
+        <div class="dossier-viewer" id="dossier-viewer">
+          <p class="placeholder">Elige un dossier para empezar a construir tu dossier de prensa.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <template id="page-template">
+    <article class="page-card" draggable="true">
+      <header class="page-card__header">
+        <span class="page-card__title"></span>
+        <div class="page-card__actions"></div>
+      </header>
+      <div class="page-card__canvas-wrapper"></div>
+      <footer class="page-card__footer"></footer>
+    </article>
+  </template>
+
+  <div class="modal hidden" id="marker-modal" role="dialog" aria-modal="true" aria-labelledby="marker-modal-title">
+    <div class="modal__content">
+      <h3 id="marker-modal-title">Añadir marca</h3>
+      <label class="modal__label" for="marker-text">Texto de la marca</label>
+      <textarea id="marker-text" rows="3"></textarea>
+      <div class="modal__actions">
+        <button type="button" id="marker-cancel">Cancelar</button>
+        <button type="button" id="marker-save">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
