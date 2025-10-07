@@ -1,5 +1,3 @@
-const pdfjsLib = window.pdfjsLib;
-
 const pdfInput = document.getElementById('pdf-input');
 const documentList = document.getElementById('document-list');
 const documentViewer = document.getElementById('document-viewer');
@@ -13,12 +11,6 @@ const markerTextarea = document.getElementById('marker-text');
 const markerCancelButton = document.getElementById('marker-cancel');
 const markerSaveButton = document.getElementById('marker-save');
 
-if (!pdfjsLib || !pdfjsLib.GlobalWorkerOptions) {
-  console.error('No se ha podido cargar pdf.js');
-  alert('No se pudo inicializar el visor de PDF. Revisa tu conexión e inténtalo de nuevo.');
-  throw new Error('pdf.js no disponible');
-}
-
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -31,10 +23,7 @@ const state = {
 };
 
 function uid(prefix) {
-  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-    return `${prefix}-${window.crypto.randomUUID()}`;
-  }
-  return `${prefix}-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+  return `${prefix}-${crypto.randomUUID()}`;
 }
 
 function createCoverPage(name) {
