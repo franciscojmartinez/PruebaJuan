@@ -1,5 +1,3 @@
-const pdfjsLib = window.pdfjsLib;
-
 const pdfInput = document.getElementById('pdf-input');
 const documentList = document.getElementById('document-list');
 const documentViewer = document.getElementById('document-viewer');
@@ -13,12 +11,6 @@ const markerTextarea = document.getElementById('marker-text');
 const markerCancelButton = document.getElementById('marker-cancel');
 const markerSaveButton = document.getElementById('marker-save');
 
-if (!pdfjsLib || !pdfjsLib.GlobalWorkerOptions) {
-  console.error('No se ha podido cargar pdf.js');
-  alert('No se pudo inicializar el visor de PDF. Revisa tu conexión e inténtalo de nuevo.');
-  throw new Error('pdf.js no disponible');
-}
-
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -31,10 +23,7 @@ const state = {
 };
 
 function uid(prefix) {
-  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-    return `${prefix}-${window.crypto.randomUUID()}`;
-  }
-  return `${prefix}-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+  return `${prefix}-${crypto.randomUUID()}`;
 }
 
 function createCoverPage(name) {
@@ -58,12 +47,7 @@ function createDossier(name) {
 
 function ensureInitialDossiers() {
   const defaults = ['Política', 'Deportes', 'Economía'];
-  defaults.forEach((name, index) => {
-    const dossier = createDossier(name);
-    if (index === 0) {
-      state.selectedDossierId = dossier.id;
-    }
-  });
+  defaults.forEach((name) => createDossier(name));
 }
 
 function renderDocumentList() {
@@ -102,17 +86,7 @@ async function renderDocumentPages(documentId) {
   grid.className = 'page-grid';
   documentViewer.appendChild(grid);
 
-  let pdf;
-  try {
-    pdf = await doc.pdfPromise;
-  } catch (error) {
-    console.error('No se pudo renderizar el PDF', error);
-    if (state.selectedDocumentId === documentId) {
-      documentViewer.innerHTML =
-        '<p class="placeholder">No se pudo abrir este periódico. Elige otro archivo.</p>';
-    }
-    return;
-  }
+  const pdf = await doc.pdfPromise;
   doc.pageCount = pdf.numPages;
   renderDocumentList();
 
@@ -418,36 +392,18 @@ function handleDocumentUpload(event) {
   const files = Array.from(event.target.files || []);
   files.forEach((file) => {
     const reader = new FileReader();
-    reader.onload = async () => {
+    reader.onload = () => {
       const buffer = reader.result;
       const id = uid('doc');
-      const data = new Uint8Array(buffer);
-      const pdfPromise = pdfjsLib.getDocument({ data }).promise.catch((error) => {
-        console.error('Error al cargar el PDF', error);
-        alert(`No se pudo abrir el archivo "${file.name}". Comprueba que es un PDF válido.`);
-        state.documents.delete(id);
-        renderDocumentList();
-        if (state.selectedDocumentId === id) {
-          state.selectedDocumentId = null;
-          documentViewer.innerHTML =
-            '<p class="placeholder">Selecciona un periódico para ver sus páginas.</p>';
-        }
-        throw error;
-      });
+      const pdfPromise = pdfjsLib.getDocument({ data: buffer }).promise;
       state.documents.set(id, {
         id,
         name: file.name.replace(/\.pdf$/i, ''),
-        buffer: data,
+        buffer,
         pdfPromise,
         pageCount: null,
       });
-      if (!state.selectedDocumentId) {
-        state.selectedDocumentId = id;
-      }
       renderDocumentList();
-      if (state.selectedDocumentId === id) {
-        renderDocumentPages(id);
-      }
     };
     reader.readAsArrayBuffer(file);
   });
@@ -470,9 +426,6 @@ function init() {
   ensureInitialDossiers();
   renderDocumentList();
   renderDossierList();
-  if (state.selectedDossierId) {
-    renderDossier(state.selectedDossierId);
-  }
 
   pdfInput.addEventListener('change', handleDocumentUpload);
   newDossierForm.addEventListener('submit', handleNewDossier);
